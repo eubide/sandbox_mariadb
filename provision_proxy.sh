@@ -89,8 +89,6 @@ INSERT INTO mysql_query_rules (active, match_digest, destination_hostgroup, appl
 LOAD MYSQL QUERY RULES TO RUNTIME;SAVE MYSQL QUERY RULES TO DISK;
 EOF
 
-exit 0 
-
 # cluster proxysql config
 # for each ProxySQL node
 PROXYSQL_NODES="$1"

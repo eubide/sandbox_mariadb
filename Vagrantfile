@@ -8,7 +8,7 @@ base_ip="192.168.35."
 first_ip=90
 
 # number of proxies
-number_of_proxies=1
+number_of_proxies=2
 
 # the number of pxc nodes
 number_of_nodes=3

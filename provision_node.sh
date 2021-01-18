@@ -22,7 +22,7 @@ EOF
 
 yum makecache fast
 
-yum -y install MariaDB-server MariaDB-client 
+yum -y install MariaDB-server MariaDB-client MariaDB-backup
 
 tee /etc/my.cnf.d/galera.cnf<<EOF
 [mysqld]
@@ -62,8 +62,8 @@ wsrep_node_name=node$NODE_NR
 wsrep_sst_method=rsync
 # Can use mariabackup: apt install mariadb-backup
 # https://mariadb.com/kb/en/library/mariadb-backup-overview/#using-mariadb-backup-for-galera-ssts
-#wsrep_sst_method=mariabackup
-#wsrep_sst_auth=USER:PASSWORD
+# wsrep_sst_method = mariabackup
+# wsrep_sst_auth = mariadb:mar1ab4ckup
 EOF
 
 # systemctl enable --now mariadb
@@ -82,6 +82,9 @@ then
 	mysql -e "GRANT ALL ON *.* TO 'app'@'%';"
 	mysql -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app';"
 	mysql -e "GRANT ALL ON *.* TO 'app'@'localhost';"
+
+	mysql -e "CREATE USER 'mariabackup'@'localhost' IDENTIFIED BY 'mar1ab4ckup';"
+	mysql -e "GRANT RELOAD, PROCESS, LOCK TABLES, REPLICATION CLIENT ON *.* TO 'mariabackup'@'localhost';"
 
 	mysql -e "grant all privileges on *.* to 'root'@'192.%' identified by 'sekret';"
 	mysql -e "grant all privileges on *.* to 'root'@'127.0.0.1' identified by 'sekret';"
