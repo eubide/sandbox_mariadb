@@ -1,17 +1,24 @@
 #!/bin/bash
-echo "echo: $1"
+
+cat <<EOF | tee /etc/yum.repos.d/proxysql.repo
+[proxysql_repo]
+name= ProxySQL YUM repository
+baseurl=https://repo.proxysql.com/ProxySQL/proxysql-2.0.x/centos/\$releasever
+gpgcheck=1
+gpgkey=https://repo.proxysql.com/ProxySQL/repo_pub_key
+EOF
 
 yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
 
-yum -y install wget tar strace vim proxysql2 Percona-Server-client-57 sysbench
-
-# yum -y install wget tar strace vim proxysql Percona-Server-client-57
-# yum -y install tar strace vim Percona-Server-client-57 proxysql-1.3.7-1.1.el7.x86_64
-# yum -y install tar strace vim Percona-Server-client-57 proxysql-1.4.5-1.1.el7
-# yum -y install tar strace vim Percona-Server-client-57 https://github.com/sysown/proxysql/releases/download/v1.4.8/proxysql-1.4.8-1-centos7.x86_64.rpm
+yum -y install wget tar strace vim proxysql-2.0.16 Percona-Server-client-57 sysbench
 
 iptables -F
 setenforce 0
+
+cat <<EOF >/etc/environment
+LANG=en_US.utf-8
+LC_ALL=en_US.utf-8
+EOF
 
 echo "Arguments: $@"
 
@@ -25,8 +32,7 @@ EOF
 
 MYSQL="mysql -uadmin -padmin -h127.0.0.1 -P6032 "
 
-
-$MYSQL << EOF
+$MYSQL <<EOF
 -- MYSQL INTERFACA
 show variables like '%interface%';
 UPDATE global_variables SET variable_value='0.0.0.0:3306' WHERE variable_name='mysql-interfaces';
@@ -36,7 +42,7 @@ EOF
 systemctl restart proxysql
 sleep 7
 
-$MYSQL << EOF
+$MYSQL <<EOF
 -- ADMIN VARIABLES
 
 UPDATE global_variables SET variable_value='admin:admin;cluster_user:cluster_password' WHERE variable_name = 'admin-admin_credentials';
@@ -66,15 +72,13 @@ $MYSQL </tmp/users.sql
 $MYSQL -e "LOAD MYSQL USERS TO RUN; SAVE MYSQL USERS TO DISK;"
 
 # for each Galera node
-for node in $(seq 1 $NODES)
-do
-  if [[ $node -gt 1 ]]
-  then
-    WRITE_NODE+=","
-  fi
-  WRITE_NODE+="$1:3306"
-  $MYSQL -e "INSERT INTO mysql_servers(hostgroup_id,hostname) VALUES(10,'$1');"
-  shift
+for node in $(seq 1 $NODES); do
+	if [[ $node -gt 1 ]]; then
+		WRITE_NODE+=","
+	fi
+	WRITE_NODE+="$1:3306"
+	$MYSQL -e "INSERT INTO mysql_servers(hostgroup_id,hostname) VALUES(10,'$1');"
+	shift
 done
 $MYSQL -e "LOAD MYSQL SERVERS TO RUN; SAVE MYSQL SERVERS TO DISK;"
 
@@ -82,7 +86,7 @@ $MYSQL -e "INSERT INTO mysql_galera_hostgroups (writer_hostgroup,backup_writer_h
 VALUES (10,30,20,40,1,1,1,100);"
 $MYSQL -e "LOAD MYSQL SERVERS TO RUN; SAVE MYSQL SERVERS TO DISK;"
 
-$MYSQL << EOF
+$MYSQL <<EOF
 INSERT INTO mysql_query_rules (active, match_digest, destination_hostgroup, apply) VALUES (1, '^SELECT.*', 20, 1);
 INSERT INTO mysql_query_rules (active, match_digest, destination_hostgroup, apply) VALUES (1, '^SELECT.* FOR UPDATE', 10, 1);
 
@@ -91,11 +95,14 @@ EOF
 
 # cluster proxysql config
 # for each ProxySQL node
+
 PROXYSQL_NODES="$1"
 shift
-for proxy in $(seq 1 $PROXYSQL_NODES)
-do
-  $MYSQL -e "INSERT INTO proxysql_servers VALUES ('$1',6032,0,'proxysql$proxy');"
-  shift
-done
-$MYSQL -e "LOAD PROXYSQL SERVERS TO RUNTIME; SAVE PROXYSQL SERVERS TO DISK;"
+
+if [[ $PROXYSQL_NODES -gt 1 ]]; then
+	for proxy in $(seq 1 $PROXYSQL_NODES); do
+		$MYSQL -e "INSERT INTO proxysql_servers VALUES ('$1',6032,0,'proxysql$proxy');"
+		shift
+	done
+	$MYSQL -e "LOAD PROXYSQL SERVERS TO RUNTIME; SAVE PROXYSQL SERVERS TO DISK;"
+fi

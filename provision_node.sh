@@ -7,12 +7,17 @@
 iptables -F
 setenforce 0
 
+cat <<EOF >/etc/environment
+LANG=en_US.utf-8
+LC_ALL=en_US.utf-8
+EOF
+
 NODE_NR=$1
 NODE_IP="$2"
 IPS_COMMA="$3"
 BOOTSTRAP_IP="$4"
 
-tee /etc/yum.repos.d/MariaDB.repo<<EOF 
+tee /etc/yum.repos.d/MariaDB.repo <<EOF
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/10.4/centos7-amd64
@@ -24,7 +29,7 @@ yum makecache fast
 
 yum -y install MariaDB-server MariaDB-client MariaDB-backup
 
-tee /etc/my.cnf.d/galera.cnf<<EOF
+tee /etc/my.cnf.d/galera.cnf <<EOF
 [mysqld]
 
 binlog_format = ROW
@@ -68,8 +73,7 @@ EOF
 
 # systemctl enable --now mariadb
 
-if [[ $NODE_NR -eq 1 ]]
-then
+if [[ $NODE_NR -eq 1 ]]; then
 	galera_new_cluster
 
 	# ProxySQL users
@@ -77,7 +81,7 @@ then
 	mysql -e "GRANT USAGE ON *.* TO 'monitor'@'%';"
 	mysql -e "CREATE USER 'monitor'@'localhost' IDENTIFIED BY 'monit0r';"
 	mysql -e "GRANT USAGE ON *.* TO 'monitor'@'localhost';"
-	
+
 	mysql -e "CREATE USER 'app'@'%' IDENTIFIED BY 'app';"
 	mysql -e "GRANT ALL ON *.* TO 'app'@'%';"
 	mysql -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app';"
@@ -86,16 +90,14 @@ then
 	mysql -e "CREATE USER 'mariabackup'@'localhost' IDENTIFIED BY 'mar1ab4ckup';"
 	mysql -e "GRANT RELOAD, PROCESS, LOCK TABLES, REPLICATION CLIENT ON *.* TO 'mariabackup'@'localhost';"
 
-	mysql -e "grant all privileges on *.* to 'root'@'192.%' identified by 'sekret';"
-	mysql -e "grant all privileges on *.* to 'root'@'127.0.0.1' identified by 'sekret';"
-	mysql -e "grant all privileges on *.* to 'root'@'localhost' identified by 'sekret';"
+	mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.%' IDENTIFIED BY 'sekret';"
+	mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' IDENTIFIED BY 'sekret';"
+	mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'sekret';"
 
 else
-	for i in {1..60}
-	do
-		MYSQLADMIN=`mysqladmin -uroot -psekret -h$BOOTSTRAP_IP ping`
-		if [[ "$MYSQLADMIN" == "mysqld is alive" ]]
-		then 
+	for i in {1..60}; do
+		MYSQLADMIN=$(mysqladmin -uroot -psekret -h$BOOTSTRAP_IP ping)
+		if [[ "$MYSQLADMIN" == "mysqld is alive" ]]; then
 			systemctl start mariadb
 			exit
 		else
