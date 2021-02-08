@@ -15,14 +15,18 @@ BOOTSTRAP_IP="$4"
 tee /etc/yum.repos.d/MariaDB.repo<<EOF 
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.4/centos7-amd64
+baseurl = http://yum.mariadb.org/10.3/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 
 yum makecache fast
 
-yum -y install MariaDB-server MariaDB-client 
+yum -y install wget MariaDB-server MariaDB-client 
+
+# wget https://github.com/jayjanssen/myq-tools/releases/download/1.0.4/myq_tools.tgz
+# tar xvfz myq_tools.tgz
+# mv bin/myq_status.linux-amd64  /usr/local/bin/myq_status
 
 tee /etc/my.cnf.d/galera.cnf<<EOF
 [mysqld]

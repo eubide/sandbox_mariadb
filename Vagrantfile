@@ -39,7 +39,7 @@ Vagrant.configure(2) do |config|
   (1..number_of_nodes).each do |i|
     config.vm.define "node#{i}" do |node|
       node.vm.box = "centos/7"
-      node.vbguest.auto_update = false
+#      node.vbguest.auto_update = false
       node.vm.host_name = "node#{i}"
       node.vm.network "private_network", ip:node_ips[i-1]
       node.vm.provider :virtualbox do |vb|
@@ -58,7 +58,7 @@ Vagrant.configure(2) do |config|
   (1..number_of_proxies).each do |i|
     config.vm.define "proxysql#{i}" do |proxy|
       proxy.vm.box = "centos/7"
-      proxy.vbguest.auto_update = false
+#      proxy.vbguest.auto_update = false
       proxy.vm.host_name = "proxysql#{i}"
       proxy.vm.network "private_network", ip:proxy_ips[i-1]
       proxy.vm.provider :virtualbox do |vb|
