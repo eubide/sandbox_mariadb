@@ -11,7 +11,7 @@ first_ip=90
 number_of_proxies=1
 
 # the number of pxc nodes
-number_of_nodes=3
+number_of_nodes=2
 
 # create an array to store the list of proxy ips
 proxy_ips = []

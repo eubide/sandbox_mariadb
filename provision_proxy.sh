@@ -33,7 +33,8 @@ EOF
 MYSQL="mysql -uadmin -padmin -h127.0.0.1 -P6032 "
 
 $MYSQL <<EOF
--- MYSQL INTERFACA
+-- MYSQL INTERFACE
+
 show variables like '%interface%';
 UPDATE global_variables SET variable_value='0.0.0.0:3306' WHERE variable_name='mysql-interfaces';
 SAVE MYSQL VARIABLES TO DISK;
@@ -87,8 +88,8 @@ VALUES (10,30,20,40,1,1,1,100);"
 $MYSQL -e "LOAD MYSQL SERVERS TO RUN; SAVE MYSQL SERVERS TO DISK;"
 
 $MYSQL <<EOF
-INSERT INTO mysql_query_rules (active, match_digest, destination_hostgroup, apply) VALUES (1, '^SELECT.*', 20, 1);
-INSERT INTO mysql_query_rules (active, match_digest, destination_hostgroup, apply) VALUES (1, '^SELECT.* FOR UPDATE', 10, 1);
+INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES (2, 1, '^SELECT.*', 20, 1);
+INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES (1, 1, '^SELECT.* FOR UPDATE', 10, 1);
 
 LOAD MYSQL QUERY RULES TO RUNTIME;SAVE MYSQL QUERY RULES TO DISK;
 EOF

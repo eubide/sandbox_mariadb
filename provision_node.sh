@@ -34,7 +34,6 @@ tee /etc/my.cnf.d/galera.cnf <<EOF
 
 binlog_format = ROW
 default_storage_engine = innodb
-innodb_autoinc_lock_mode = 2
 bind_address = 0.0.0.0
 
 innodb_locks_unsafe_for_binlog = 1
@@ -42,7 +41,7 @@ innodb_autoinc_lock_mode = 2
 innodb_file_per_table = 1
 innodb_log_file_size = 256M
 innodb_flush_log_at_trx_commit = 2
-innodb_buffer_pool_size = 512M
+innodb_buffer_pool_size = 256M
 innodb_use_native_aio = 0
 
 server_id = $NODE_NR
@@ -53,7 +52,7 @@ binlog_format = ROW
 wsrep_on = ON
 wsrep_provider = /usr/lib64/galera-4/libgalera_smm.so
 
-wsrep_provider_options = "gcs.fc_limit=500; gcs.fc_master_slave=YES; gcs.fc_factor=1.0; gcache.size=256M;"
+wsrep_provider_options = "gcs.fc_limit=500; gcs.fc_master_slave=YES; gcs.fc_factor=1.0; gcache.size=125M;"
 wsrep_slave_threads = 1
 wsrep_auto_increment_control = ON
 
@@ -69,6 +68,10 @@ wsrep_sst_method=rsync
 # https://mariadb.com/kb/en/library/mariadb-backup-overview/#using-mariadb-backup-for-galera-ssts
 # wsrep_sst_method = mariabackup
 # wsrep_sst_auth = mariadb:mar1ab4ckup
+
+[sst]
+sst-log-archive=1
+# sst-log-archive-dir=/var/log/
 EOF
 
 # systemctl enable --now mariadb
