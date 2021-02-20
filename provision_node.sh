@@ -99,9 +99,10 @@ if [[ $NODE_NR -eq 1 ]]; then
 
 else
 	for i in {1..60}; do
-		MYSQLADMIN=$(mysqladmin -uroot -psekret -h$BOOTSTRAP_IP ping)
+		MYSQLADMIN=$(mysqladmin -uroot -psekret -h"$BOOTSTRAP_IP" ping)
 		if [[ "$MYSQLADMIN" == "mysqld is alive" ]]; then
 			systemctl start mariadb
+			echo "ready on $i"
 			exit
 		else
 			sleep 5

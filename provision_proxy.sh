@@ -20,8 +20,6 @@ LANG=en_US.utf-8
 LC_ALL=en_US.utf-8
 EOF
 
-echo "Arguments: $@"
-
 systemctl start proxysql
 sleep 7
 
@@ -64,7 +62,7 @@ NODES=$1
 shift
 
 # Users
-mysql -h $1 -u root -psekret -NB mysql <<EOF >/tmp/users.sql
+mysql -h "$1" -u root -psekret -NB mysql <<EOF >/tmp/users.sql
 select distinct "INSERT INTO mysql_users (username,password,default_hostgroup) VALUES (", CONCAT("'",User,"'"), ",", CONCAT("'",Password,"'"), ",10);" 
 from user WHERE password LIKE "*%" and User not in ('root','monitor') order by User;
 EOF
@@ -73,7 +71,7 @@ $MYSQL </tmp/users.sql
 $MYSQL -e "LOAD MYSQL USERS TO RUN; SAVE MYSQL USERS TO DISK;"
 
 # for each Galera node
-for node in $(seq 1 $NODES); do
+for node in $(seq 1 "$NODES"); do
 	if [[ $node -gt 1 ]]; then
 		WRITE_NODE+=","
 	fi
@@ -102,7 +100,7 @@ PROXYSQL_NODES="$1"
 shift
 
 if [[ $PROXYSQL_NODES -gt 1 ]]; then
-	for proxy in $(seq 1 $PROXYSQL_NODES); do
+	for proxy in $(seq 1 "$PROXYSQL_NODES"); do
 		$MYSQL -e "INSERT INTO proxysql_servers VALUES ('$1',6032,0,'proxysql$proxy');"
 		shift
 	done
