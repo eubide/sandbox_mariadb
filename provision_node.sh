@@ -25,6 +25,11 @@ gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 
+## Recent version
+## baseurl = http://yum.mariadb.org/10.4/centos7-amd64
+## Archived version
+## baseurl = https://archive.mariadb.org//mariadb-10.3.22/yum/centos7-amd64
+
 yum makecache fast
 
 yum -y install MariaDB-server MariaDB-client MariaDB-backup
