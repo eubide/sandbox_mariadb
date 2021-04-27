@@ -20,9 +20,9 @@ BOOTSTRAP_IP="$4"
 tee /etc/yum.repos.d/MariaDB.repo <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.4/centos7-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-gpgcheck=1
+baseurl = https://mirrors.chroot.ro/mariadb/yum/10.4/centos7-amd64
+gpgkey=https://mirrors.chroot.ro/mariadb/yum/RPM-GPG-KEY-MariaDB
+gpgcheck = 1
 EOF
 
 ## Recent version
