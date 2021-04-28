@@ -36,6 +36,11 @@ node_ips = []
 end
 
 Vagrant.configure(2) do |config|
+
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
   (1..number_of_nodes).each do |i|
     config.vm.define "node#{i}" do |node|
       node.vm.box = "centos/7"
