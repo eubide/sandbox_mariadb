@@ -8,7 +8,7 @@ base_ip="192.168.35."
 first_ip=90
 
 # number of proxies
-number_of_proxies=1
+number_of_proxies=0
 
 # the number of pxc nodes
 number_of_nodes=2
@@ -44,15 +44,15 @@ Vagrant.configure(2) do |config|
   (1..number_of_nodes).each do |i|
     config.vm.define "node#{i}" do |node|
       node.vm.box = "centos/7"
-#      node.vbguest.auto_update = false
+#     node.vbguest.auto_update = false
       node.vm.host_name = "node#{i}"
       node.vm.network "private_network", ip:node_ips[i-1]
       node.vm.provider :virtualbox do |vb|
         vb.customize ["modifyvm", :id, "--memory", "512"]
         vb.customize ["modifyvm", :id, "--cpus", "1"]
-#        if i == 3
-#	  vb.customize ["modifyvm", :id, "--cpuexecutioncap", "75"]
-#        end
+#       if i == 3
+#	        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "75"]
+#       end
       end
       node.vm.provision :shell do |s|
         s.path = "provision_node.sh"
