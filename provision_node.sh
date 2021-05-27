@@ -35,7 +35,7 @@ yum makecache fast
 
 yum -y install MariaDB-server MariaDB-client MariaDB-backup
 
-yum -y install tar gdb strace perf socat
+yum -y install tar gdb strace perf socat sysbench
 
 tee /etc/my.cnf.d/galera.cnf <<EOF
 [mysqld]

@@ -8,10 +8,10 @@ base_ip="192.168.35."
 first_ip=90
 
 # number of proxies
-number_of_proxies=0
+number_of_proxies=1
 
 # the number of pxc nodes
-number_of_nodes=2
+number_of_nodes=3
 
 # create an array to store the list of proxy ips
 proxy_ips = []
