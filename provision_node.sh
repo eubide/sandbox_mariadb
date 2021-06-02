@@ -34,7 +34,6 @@ EOF
 yum makecache fast
 
 yum -y install MariaDB-server MariaDB-client MariaDB-backup
-
 yum -y install tar gdb strace perf socat sysbench
 
 tee /etc/my.cnf.d/galera.cnf <<EOF
@@ -53,14 +52,25 @@ innodb_buffer_pool_size        = 256M
 innodb_use_native_aio          = 0
 
 server_id                      = $NODE_NR
-log_error                      = mariadb${NODE_NR}.err
+log_error                      = ${NODE_NR}.err
+
+# slow queries for PMM 
+log_output                     = file
+slow_query_log                 = ON
+long_query_time                = 0
+log_slow_verbosity             = query_plan,innodb
+log_slow_admin_statements      = ON
+log_slow_slave_statements      = ON
+innodb_monitor_enable          = all
+userstat                       = 1
+performance_schema             = ON
 
 # Galera Provider Configuration
 wsrep_on                       = ON
 wsrep_provider                 = /usr/lib64/galera-4/libgalera_smm.so
 
 # mariadb 10.3 --- mariadb-backup is not working with mysql user
-# wsrep_provider                 = /usr/lib64/galera/libgalera_smm.so
+# wsrep_provider               = /usr/lib64/galera/libgalera_smm.so
 
 
 wsrep_provider_options         = "gcs.fc_limit=100; gcs.fc_master_slave=YES; gcs.fc_factor=1.0; gcache.size=125M;"
@@ -79,11 +89,11 @@ wsrep_node_name                = node$NODE_NR
 # Galera Synchronization Configuration - MARIADB-BACKUP 
 wsrep_sst_method               = mariabackup
 wsrep_sst_auth                 = mysql
-# wsrep_sst_auth                 = mariadb:mar1ab4ckup
+# wsrep_sst_auth               = mariadb:mar1ab4ckup
 
 [sst]
 sst-log-archive                = 1
-# sst-log-archive-dir            = /var/log/
+# sst-log-archive-dir          = /var/log/
 EOF
 
 # systemctl enable --now mariadb
@@ -101,9 +111,6 @@ if [[ $NODE_NR -eq 1 ]]; then
   mysql -e "GRANT ALL ON *.* TO 'app'@'%';"
   mysql -e "CREATE USER 'app'@'localhost' IDENTIFIED BY 'app';"
   mysql -e "GRANT ALL ON *.* TO 'app'@'localhost';"
-
-  # mysql -e "CREATE USER 'mariabackup'@'localhost' IDENTIFIED BY 'mar1ab4ckup';"
-  # mysql -e "GRANT RELOAD, PROCESS, LOCK TABLES, REPLICATION CLIENT ON *.* TO 'mariabackup'@'localhost';"
 
   mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.%' IDENTIFIED BY 'sekret';"
   mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' IDENTIFIED BY 'sekret';"
