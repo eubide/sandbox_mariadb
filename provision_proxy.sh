@@ -1,5 +1,20 @@
 #!/bin/bash
 
+echo "all arguments"
+echo $@
+
+iptables -F
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+
+cat <<EOF >/etc/environment
+LANG=en_US.utf-8
+LC_ALL=en_US.utf-8
+EOF
+
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+systemctl restart sshd.service
+
 cat <<EOF | tee /etc/yum.repos.d/proxysql.repo
 [proxysql_repo]
 name= ProxySQL YUM repository
@@ -10,15 +25,10 @@ EOF
 
 yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
 
-yum -y install wget tar strace vim proxysql-2.0.16 Percona-Server-client-57 sysbench
+yum -y install wget tar perf gdb strace vim socat
+yum -y install sysbench
 
-iptables -F
-setenforce 0
-
-cat <<EOF >/etc/environment
-LANG=en_US.utf-8
-LC_ALL=en_US.utf-8
-EOF
+yum -y install proxysql-2.0.16 Percona-Server-client-57 percona-toolkit
 
 systemctl start proxysql
 sleep 7
@@ -106,3 +116,11 @@ if [[ $PROXYSQL_NODES -gt 1 ]]; then
 	done
 	$MYSQL -e "LOAD PROXYSQL SERVERS TO RUNTIME; SAVE PROXYSQL SERVERS TO DISK;"
 fi
+
+tee /home/vagrant/.my.cnf <<EOF
+[client]
+port                           = 3306
+host                           = 127.0.0.1
+user                           = app
+password                       = app
+EOF

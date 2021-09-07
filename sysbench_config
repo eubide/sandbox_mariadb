@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # proxysql
-export HOST_IP=192.168.35.90
+export HOST_IP=192.168.35.60
 
 # writer node1
-# export HOST_IP=192.168.35.91
+# export HOST_IP=192.168.35.70
 
 export HOST_PORT=3306
 

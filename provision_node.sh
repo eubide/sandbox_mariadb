@@ -38,7 +38,11 @@ EOF
 yum makecache fast
 
 yum -y install MariaDB-server MariaDB-client MariaDB-backup
-yum -y install tar gdb strace perf socat sysbench
+
+yum -y install wget tar perf gdb strace vim socat
+yum -y install sysbench
+
+yum -y install https://downloads.percona.com/downloads/percona-toolkit/3.3.1/binary/redhat/7/x86_64/percona-toolkit-3.3.1-1.el7.x86_64.rpm
 
 tee /etc/my.cnf.d/galera.cnf <<EOF
 [mysqld]
@@ -137,4 +141,5 @@ cat <<EOF >/home/vagrant/.my.cnf
 [mysql]
 user=root
 password=sekret
+socket=/var/lib/mysql/mysql.sock
 EOF
