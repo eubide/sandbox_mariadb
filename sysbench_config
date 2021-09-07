@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# proxysql
+export HOST_IP=192.168.35.90
+
+# writer node1
+# export HOST_IP=192.168.35.91
+
+export HOST_PORT=3306
+
+export SYSB_USER=app
+export SYSB_PASS=app
+export SYSB_DB=test
+
+export TABLE_SIZE=10000
+
+bulk=false
+if [ "$bulk" = true ]; then
+    export TABLES=1
+    export THREADS=1
+    export TYPE=bulk_insert.lua
+else
+    export TABLES=7
+    export THREADS=4
+    export TYPE=oltp_read_write.lua
+fi

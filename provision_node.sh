@@ -1,35 +1,39 @@
 #!/bin/bash
-
 # https://severalnines.com/blog/updated-how-bootstrap-mysql-or-mariadb-galera-cluster
 
-# yum  -y update
-
-iptables -F
-setenforce 0
-
-cat <<EOF >/etc/environment
-LANG=en_US.utf-8
-LC_ALL=en_US.utf-8
-EOF
+echo "---"
+echo "provision_node.sh: arguments revieved $@"
 
 NODE_NR=$1
 NODE_IP="$2"
 IPS_COMMA="$3"
 BOOTSTRAP_IP="$4"
 
-tee /etc/yum.repos.d/MariaDB.repo <<EOF
-[mariadb]
-name = MariaDB
-baseurl = https://mirrors.chroot.ro/mariadb/yum/10.4/centos7-amd64
-gpgkey=https://mirrors.chroot.ro/mariadb/yum/RPM-GPG-KEY-MariaDB
-gpgcheck = 1
+iptables -F
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+
+cat <<EOF >/etc/environment
+LANG=en_US.utf-8
+LC_ALL=en_US.utf-8
 EOF
 
-## Recent version
-## baseurl = http://yum.mariadb.org/10.4/centos7-amd64
-## baseurl = https://mirrors.chroot.ro/mariadb/yum/10.3/centos7-amd64
-## Archived version
-## baseurl = https://archive.mariadb.org//mariadb-10.3.22/yum/centos7-amd64
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+systemctl restart sshd.service
+
+# more versions on http://yum.mariadb.org/
+VERSION=10.4.19
+# VERSION=10.1
+
+cat <<EOF | sudo tee -a /etc/yum.repos.d/MariaDB.repo
+# MariaDB 10.1 CentOS repository list
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/${VERSION}/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
 
 yum makecache fast
 
@@ -128,3 +132,9 @@ else
     fi
   done
 fi
+
+cat <<EOF >/home/vagrant/.my.cnf
+[mysql]
+user=root
+password=sekret
+EOF
