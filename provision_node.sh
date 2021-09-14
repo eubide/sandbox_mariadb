@@ -60,7 +60,9 @@ innodb_buffer_pool_size        = 256M
 innodb_use_native_aio          = 0
 
 server_id                      = $NODE_NR
-log_error                      = ${NODE_NR}.err
+log_error                      = node${NODE_NR}.err
+
+log_warnings                   = 1
 
 # slow queries for PMM 
 log_output                     = file
