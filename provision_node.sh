@@ -16,6 +16,8 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 cat <<EOF >/etc/environment
 LANG=en_US.utf-8
 LC_ALL=en_US.utf-8
+LC_CTYPE=en_US.UTF-8
+LC_ALL=en_US.UTF-8
 EOF
 
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
