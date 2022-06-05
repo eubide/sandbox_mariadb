@@ -24,15 +24,27 @@ sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_
 systemctl restart sshd.service
 
 # more versions on http://yum.mariadb.org/
-VERSION=10.4.19
-# VERSION=10.1
+# VERSION=10.4.21
+VERSION=10.4.15
 
+# CURRENT REPOSITORY
+# cat <<EOF | sudo tee -a /etc/yum.repos.d/MariaDB.repo
+# # MariaDB 10.1 CentOS repository list
+# # http://downloads.mariadb.org/mariadb/repositories/
+# [mariadb]
+# name = MariaDB
+# baseurl = http://yum.mariadb.org/${VERSION}/centos7-amd64
+# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+
+# ARCHIVE
 cat <<EOF | sudo tee -a /etc/yum.repos.d/MariaDB.repo
 # MariaDB 10.1 CentOS repository list
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
-name = MariaDB
-baseurl = http://yum.mariadb.org/${VERSION}/centos7-amd64
+name = MariaDB-${VERSION}
+baseurl=http://archive.mariadb.org/mariadb-${VERSION}/yum/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -46,7 +58,12 @@ yum -y install sysbench
 
 yum -y install https://downloads.percona.com/downloads/percona-toolkit/3.3.1/binary/redhat/7/x86_64/percona-toolkit-3.3.1-1.el7.x86_64.rpm
 
-tee /etc/my.cnf.d/galera.cnf <<EOF
+tee /etc/my.cnf <<EOF
+[mysql]
+port                           = 3306
+socket                         = /var/lib/mysql/mysql.sock
+prompt                         = 'node${NODE_NR}: \u@\h (\d) > '
+
 [mysqld]
 
 binlog_format                  = ROW
@@ -61,7 +78,7 @@ innodb_flush_log_at_trx_commit = 2
 innodb_buffer_pool_size        = 256M
 innodb_use_native_aio          = 0
 
-server_id                      = $NODE_NR
+server_id                      = $(date +%s)
 log_error                      = node${NODE_NR}.err
 
 log_warnings                   = 1
@@ -134,7 +151,7 @@ else
     if [[ "$MYSQLADMIN" == "mysqld is alive" ]]; then
       systemctl start mariadb
       echo "ready on $i"
-      exit
+      break
     else
       sleep 5
     fi
@@ -143,7 +160,7 @@ fi
 
 cat <<EOF >/home/vagrant/.my.cnf
 [mysql]
-user=root
-password=sekret
-socket=/var/lib/mysql/mysql.sock
+user     = root
+password = sekret
+socket   = /var/lib/mysql/mysql.sock
 EOF

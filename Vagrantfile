@@ -45,6 +45,14 @@ puts("---")
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 Vagrant.configure(2) do |config|
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    # config.hostmanager.manage_host = true
+    config.hostmanager.manage_guest = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
   config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
 
   (1..number_of_nodes).each do |i|
@@ -56,11 +64,9 @@ Vagrant.configure(2) do |config|
       node.vm.provider(:virtualbox) do |vb|
         vb.customize(["modifyvm", :id, "--memory", "1024"])
         vb.customize(["modifyvm", :id, "--cpus", "1"])
+        vb.customize(["modifyvm", :id, "--cpuexecutioncap", "75"]) if i == 3
       end
 
-      # if i == 3
-      #  vb.customize ["modifyvm", :id, "--cpuexecutioncap", "75"]
-      # end
       node.vm.provision(:shell) do |s|
         s.path = "provision_node.sh"
         s.args = [i, node_ips[i - 1], gcomm_address, node_ips[0]]
@@ -75,7 +81,7 @@ Vagrant.configure(2) do |config|
       proxy.vm.network("private_network",       ip: proxy_ips[i - 1])
 
       proxy.vm.provider(:virtualbox) do |vb|
-        vb.customize(["modifyvm", :id, "--memory", "512"])
+        vb.customize(["modifyvm", :id, "--memory", "256"])
         vb.customize(["modifyvm", :id, "--cpus", "1"])
       end
 
